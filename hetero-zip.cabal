@@ -17,6 +17,7 @@ maintainer:         philip.hazelden@gmail.com
 copyright:          Phil Hazelden, 2024
 category:           Data
 build-type:         Simple
+tested-with:        GHC == { 9.0.2, 9.2.8, 9.4.8, 9.6.3, 9.8.1 }
 
 extra-doc-files:    README.md, CHANGELOG.md
 
@@ -30,18 +31,9 @@ library
     -- other-modules:
     -- other-extensions:
     hs-source-dirs:   src
-    build-depends:    base ^>=4.16.4.0,
-                      infinite-list
-
-test-suite hetero-zip-test
-    import:           warnings
-    default-language: Haskell2010
-    -- other-modules:
-    -- other-extensions:
-    type:             exitcode-stdio-1.0
-    hs-source-dirs:   test
-    main-is:          Main.hs
-
     build-depends:
-        base ^>=4.16.4.0,
-        hetero-zip
+      -- base 4.15 corresponds to ghc 9.0.*. We can probably go back further
+      -- with both ghc and base if anyone cares.
+      base ^>= { 4.15, 4.16, 4.17, 4.18, 4.19 },
+      -- probably safe not to version this:
+      infinite-list,
