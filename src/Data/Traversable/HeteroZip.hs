@@ -43,6 +43,7 @@ import GHC.Stack ( HasCallStack, withFrozenCallStack )
 
 -- $setup
 -- >>> :set -Wno-type-defaults -Wno-name-shadowing
+-- >>> import Data.Maybe (isJust)
 
 -- $zipping
 --
@@ -69,6 +70,55 @@ import GHC.Stack ( HasCallStack, withFrozenCallStack )
 --
 -- * `zipInf` and `zipWithInf` use an `Infinite` list that will never be too
 --   short.
+--
+-- All these functions are lazy in both the list and `Traversable` arguments,
+-- and in the function application, to the extent that the `Traversable`
+-- instance allows. For example:
+--
+-- >>> take 3 $ zip ([1, 2, 3] ++ undefined) ([1, 2, 3] ++ undefined)
+-- [(Just 1,1),(Just 2,2),(Just 3,3)]
+-- >>> fst <$> zip [1, 2, 3] [1, 2, undefined]
+-- [Just 1,Just 2,Just 3]
+-- >>> isJust . fst <$> zip [1, 2, undefined] [1, 2, undefined]
+-- [True,True,True]
+-- >>> snd <$> zip [1, 2, undefined] [1, 2, 3]
+-- [1,2,3]
+
+-- $more-laziness-examples
+--
+-- >>> take 3 $ zipMay ([1, 2, 3] ++ undefined) ([1, 2, 3] ++ undefined)
+-- [Just (1,1),Just (2,2),Just (3,3)]
+-- >>> take 3 $ zipMay [1, 2] [1, 2, undefined]
+-- [Just (1,1),Just (2,2),Nothing]
+-- >>> fmap fst <$> zipMay [1, 2] [1, 2, undefined]
+-- [Just 1,Just 2,Nothing]
+-- >>> fmap fst <$> zipMay [1, 2, 3] [1, 2, undefined]
+-- [Just 1,Just 2,Just 3]
+-- >>> isJust <$> zipMay [1, 2, undefined] [1, 2, undefined]
+-- [True,True,True]
+-- >>> fmap snd <$> zipMay [1, 2, undefined] [1, 2, 3]
+-- [Just 1,Just 2,Just 3]
+--
+-- >>> take 3 $ zipErr ([1, 2, 3] ++ undefined) ([1, 2, 3] ++ undefined)
+-- [(1,1),(2,2),(3,3)]
+-- >>> fst <$> zipErr [1, 2, 3] [1, 2, undefined]
+-- [1,2,3]
+-- >>> snd <$> zipErr [1, 2, undefined] [1, 2, 3]
+-- [1,2,3]
+--
+-- >>> take 3 $ zipNote undefined ([1, 2, 3] ++ undefined) ([1, 2, 3] ++ undefined)
+-- [(1,1),(2,2),(3,3)]
+-- >>> fst <$> zipNote undefined [1, 2, 3] [1, 2, undefined]
+-- [1,2,3]
+-- >>> snd <$> zipNote undefined [1, 2, undefined] [1, 2, 3]
+-- [1,2,3]
+--
+-- >>> take 3 $ zipInf (1 :< 2 :< 3 :< undefined) ([1, 2, 3] ++ undefined)
+-- [(1,1),(2,2),(3,3)]
+-- >>> fst <$> zipInf (1 :< 2 :< 3 :< undefined) [1, 2, 3]
+-- [1,2,3]
+-- >>> snd <$> zipInf (1 :< 2 :< undefined :< undefined) [1, 2, 3]
+-- [1,2,3]
 
 -- | Zip a list with any `Traversable`, maintaining the shape of the latter.
 --
@@ -249,7 +299,7 @@ zipWithNote
 zipWithNote errStr f =
   withFrozenCallStack $ zipWith $ \ma b -> f (fromMaybe (error errStr) ma) b
 
--- $ enumeration
+-- $enumeration
 --
 -- If all you want is to number off elements starting from @0@, these functions
 -- are convenient.
@@ -363,6 +413,9 @@ unsetHoles f = fmap f . getCompose
 
 (.:) :: (c -> d) -> (a -> b -> c) -> a -> b -> d
 (.:) = (.) . (.)
+
+-- == __Boring list of more examples__
+--
 
 -- $traversable
 --
