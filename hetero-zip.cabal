@@ -35,5 +35,4 @@ library
       -- base 4.15 corresponds to ghc 9.0.*. We can probably go back further
       -- with both ghc and base if anyone cares.
       base ^>= { 4.15, 4.16, 4.17, 4.18, 4.19 },
-      -- probably safe not to version this:
-      infinite-list,
+      infinite-list ^>= 0.1,
