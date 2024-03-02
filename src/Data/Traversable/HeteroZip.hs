@@ -44,6 +44,9 @@ import GHC.Stack ( HasCallStack, withFrozenCallStack )
 -- $setup
 -- >>> :set -Wno-type-defaults -Wno-name-shadowing
 -- >>> import Data.Maybe (isJust)
+--
+-- This means we don't need to repeat a noisy stack trace in test outputs:
+-- >>> undefined = errorWithoutStackTrace "Prelude.undefined"
 
 -- $zipping
 --
@@ -86,6 +89,17 @@ import GHC.Stack ( HasCallStack, withFrozenCallStack )
 
 -- $more-laziness-examples
 --
+-- Current failures:
+-- (These are similar to the above but replace an @undefined : []@ with a plain
+-- @undefined@, so they have less to work with. It wouldn't be a regression if
+-- they somehow succeeded but I think that's not possible.)
+-- >>> isJust . fst <$> zip ([1, 2] ++ undefined) [1, 2, undefined]
+-- [True,True,*** Exception: Prelude.undefined
+-- >>> isJust . fst <$> zip [1, 2, undefined] ([1, 2] ++ undefined)
+-- [True,True*** Exception: Prelude.undefined
+-- >>> snd <$> zip ([1, 2] ++ undefined) [1, 2, 3]
+-- [1,2,*** Exception: Prelude.undefined
+--
 -- >>> take 3 $ zipMay ([1, 2, 3] ++ undefined) ([1, 2, 3] ++ undefined)
 -- [Just (1,1),Just (2,2),Just (3,3)]
 -- >>> take 3 $ zipMay [1, 2] [1, 2, undefined]
@@ -99,12 +113,26 @@ import GHC.Stack ( HasCallStack, withFrozenCallStack )
 -- >>> fmap snd <$> zipMay [1, 2, undefined] [1, 2, 3]
 -- [Just 1,Just 2,Just 3]
 --
+-- Current failures:
+-- >>> take 3 $ zipMay [1, 2] ([1, 2] ++ undefined)
+-- [Just (1,1),Just (2,2)*** Exception: Prelude.undefined
+-- >>> isJust <$> zipMay ([1, 2] ++ undefined) [1, 2, undefined]
+-- [True,True,*** Exception: Prelude.undefined
+-- >>> isJust <$> zipMay [1, 2, undefined] ([1, 2] ++ undefined)
+-- [True,True*** Exception: Prelude.undefined
+--
 -- >>> take 3 $ zipErr ([1, 2, 3] ++ undefined) ([1, 2, 3] ++ undefined)
 -- [(1,1),(2,2),(3,3)]
 -- >>> fst <$> zipErr [1, 2, 3] [1, 2, undefined]
 -- [1,2,3]
 -- >>> snd <$> zipErr [1, 2, undefined] [1, 2, 3]
 -- [1,2,3]
+--
+-- Current failures:
+-- >>> fst <$> zipErr [1, 2, 3] ([1, 2] ++ undefined)
+-- [1,2*** Exception: Prelude.undefined
+-- >>> snd <$> zipErr ([1, 2] ++ undefined) [1, 2, 3]
+-- [1,2,*** Exception: Prelude.undefined
 --
 -- >>> take 3 $ zipNote undefined ([1, 2, 3] ++ undefined) ([1, 2, 3] ++ undefined)
 -- [(1,1),(2,2),(3,3)]
@@ -113,12 +141,24 @@ import GHC.Stack ( HasCallStack, withFrozenCallStack )
 -- >>> snd <$> zipNote undefined [1, 2, undefined] [1, 2, 3]
 -- [1,2,3]
 --
+-- Current failures:
+-- >>> fst <$> zipNote undefined [1, 2, 3] ([1, 2] ++ undefined)
+-- [1,2*** Exception: Prelude.undefined
+-- >>> snd <$> zipNote undefined ([1, 2] ++ undefined) [1, 2, 3]
+-- [1,2,*** Exception: Prelude.undefined
+--
 -- >>> take 3 $ zipInf (1 :< 2 :< 3 :< undefined) ([1, 2, 3] ++ undefined)
 -- [(1,1),(2,2),(3,3)]
--- >>> fst <$> zipInf (1 :< 2 :< 3 :< undefined) [1, 2, 3]
+-- >>> fst <$> zipInf (1 :< 2 :< 3 :< undefined) [1, 2, undefined]
 -- [1,2,3]
 -- >>> snd <$> zipInf (1 :< 2 :< undefined :< undefined) [1, 2, 3]
 -- [1,2,3]
+--
+-- Current failures:
+-- >>> fst <$> zipInf (1 :< 2 :< 3 :< undefined) ([1, 2] ++ undefined)
+-- [1,2*** Exception: Prelude.undefined
+-- >>> snd <$> zipInf (1 :< 2 :< undefined) [1, 2, 3]
+-- [1,2,*** Exception: Prelude.undefined
 
 -- | Zip a list with any `Traversable`, maintaining the shape of the latter.
 --
@@ -257,8 +297,10 @@ zipWithErr = withFrozenCallStack $ zipWithNote "zipWithErr: list too short"
 -- Nothing
 zipWithInf
   :: Traversable t => (a -> b -> c) -> Infinite a -> t b -> t c
-zipWithInf f = snd .: mapAccumL (\(a :<  as) b -> (as, f a b))
--- When infinite-list 0.1.2 is released, this is heteroZipWith.
+zipWithInf f = snd .: mapAccumL (\(a :< as) b -> (as, f a b))
+-- When infinite-list 0.1.2 is released, this is heteroZipWith. We could use a
+-- lazy pattern match here to allow more undefinedness. But that doesn't match
+-- that function, and it doesn't match how that package typically does laziness.
 
 -- | Use a given function to zip a list with any `Traversable`, maintaining the
 -- shape of the latter.
