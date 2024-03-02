@@ -40,3 +40,5 @@ library
       -- with both ghc and base if anyone cares. 4.19 is ghc 9.8.*.
       base >= 4.15 && < 4.20,
       infinite-list >= 0.1 && < 0.2,
+
+-- No test suite, we use doctest: `cabal repl --with-ghc=doctest`
