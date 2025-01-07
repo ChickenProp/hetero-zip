@@ -17,7 +17,10 @@ maintainer:         philip.hazelden@gmail.com
 copyright:          Phil Hazelden, 2024
 category:           Data
 build-type:         Simple
-tested-with:        GHC == { 9.0.2, 9.2.8, 9.4.8, 9.6.3, 9.8.1, 9.10.1, 9.12.1 }
+tested-with:        GHC == { 9.0.2, 9.2.8, 9.4.8, 9.6.3, 9.8.1, 9.10.1 }
+                    -- 9.12.1 also works, but the formatting of exceptions with
+                    -- callstacks has changed so tests fail. Leaving it marked
+                    -- untested for now.
 
 extra-doc-files:    README.md, CHANGELOG.md
 
