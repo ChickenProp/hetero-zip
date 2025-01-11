@@ -206,7 +206,7 @@ zipErr = withFrozenCallStack $ zipNote "zipErr: list too short"
 -- Nothing
 zipInf :: Traversable t => Infinite a -> t b -> t (a, b)
 zipInf = zipWithInf (,)
--- When infinite-list 0.1.2 is released, this is heteroZip.
+-- In infinite-list 0.1.2, this is heteroZip.
 
 -- | Zip a list with any `Traversable`, maintaining the shape of the latter.
 --
@@ -239,8 +239,7 @@ zipMay = zipWithMay (,)
 --
 -- >>> zipNote "oops" [] Nothing
 -- Nothing
-zipNote
-  :: (HasCallStack, Traversable t) => String -> [a] -> t b -> t (a, b)
+zipNote :: (HasCallStack, Traversable t) => String -> [a] -> t b -> t (a, b)
 zipNote errStr = withFrozenCallStack $ zipWithNote errStr (,)
 
 -- | Use a given function to zip a list with any `Traversable`, maintaining the
@@ -295,12 +294,11 @@ zipWithErr = withFrozenCallStack $ zipWithNote "zipWithErr: list too short"
 --
 -- >>> zipWithInf (+) (1...) Nothing
 -- Nothing
-zipWithInf
-  :: Traversable t => (a -> b -> c) -> Infinite a -> t b -> t c
+zipWithInf :: Traversable t => (a -> b -> c) -> Infinite a -> t b -> t c
 zipWithInf f = snd .: mapAccumL (\(a :< as) b -> (as, f a b))
--- When infinite-list 0.1.2 is released, this is heteroZipWith. We could use a
--- lazy pattern match here to allow more undefinedness. But that doesn't match
--- that function, and it doesn't match how that package typically does laziness.
+-- In infinite-list 0.1.2, this is heteroZipWith. We could use a lazy pattern
+-- match here to allow more undefinedness. But that doesn't match that function,
+-- and it doesn't match how that package typically does laziness.
 
 -- | Use a given function to zip a list with any `Traversable`, maintaining the
 -- shape of the latter.
@@ -455,9 +453,6 @@ unsetHoles f = fmap f . getCompose
 
 (.:) :: (c -> d) -> (a -> b -> c) -> a -> b -> d
 (.:) = (.) . (.)
-
--- == __Boring list of more examples__
---
 
 -- $traversable
 --
