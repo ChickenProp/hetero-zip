@@ -6,9 +6,15 @@
 #
 #   haskell-ci regenerate
 #
-# Then restore the doctest version constraint and this comment.
-# (https://github.com/haskell-CI/haskell-ci/issues/508)
-# And also matrix entries, if haskell-ci doesn't support those GHCs yet.
+# Then restore
+#
+# - the doctest version constraint
+#   (https://github.com/haskell-CI/haskell-ci/issues/508, fixed in March 2024
+#   but not released as of June 2026)
+# - runs-on (fixed in https://github.com/haskell-CI/haskell-ci/pull/770 in Feb
+#   2025 but not released as of June 2026)
+# - this comment
+# - matrix entries, assuming haskell-ci doesn't support those GHCs yet
 #
 # For more information, see https://github.com/haskell-CI/haskell-ci
 #
@@ -23,7 +29,7 @@ on:
 jobs:
   linux:
     name: Haskell-CI - Linux - ${{ matrix.compiler }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     timeout-minutes:
       60
     container:
